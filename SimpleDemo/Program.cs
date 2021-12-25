@@ -23,6 +23,11 @@ namespace SimpleDemo {
 			while (-1 < (pos = FFA.Search(fa.ToDfaTable(), lc))) {
 				Console.WriteLine("\t{0} @ {1}", lc.GetCapture(), pos);
 			}
+
+			var ident = FFA.Parse("[A-Z_a-z][A-Z_a-z0-9]*");
+			var opts = new FFA.DotGraphOptions();
+			opts.HideAcceptSymbolIds = true;
+			ident.RenderToFile(@"..\..\..\ident.jpg",opts);
 		}
     }
 }

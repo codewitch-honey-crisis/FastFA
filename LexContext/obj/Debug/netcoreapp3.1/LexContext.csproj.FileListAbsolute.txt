@@ -1,0 +1,10 @@
+C:\Users\gazto\Source\Repos\FastFA\LexContext\bin\Debug\netcoreapp3.1\LexContext.deps.json
+C:\Users\gazto\Source\Repos\FastFA\LexContext\bin\Debug\netcoreapp3.1\LexContext.dll
+C:\Users\gazto\Source\Repos\FastFA\LexContext\bin\Debug\netcoreapp3.1\LexContext.pdb
+C:\Users\gazto\Source\Repos\FastFA\LexContext\obj\Debug\netcoreapp3.1\LexContext.csproj.AssemblyReference.cache
+C:\Users\gazto\Source\Repos\FastFA\LexContext\obj\Debug\netcoreapp3.1\LexContext.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\gazto\Source\Repos\FastFA\LexContext\obj\Debug\netcoreapp3.1\LexContext.AssemblyInfoInputs.cache
+C:\Users\gazto\Source\Repos\FastFA\LexContext\obj\Debug\netcoreapp3.1\LexContext.AssemblyInfo.cs
+C:\Users\gazto\Source\Repos\FastFA\LexContext\obj\Debug\netcoreapp3.1\LexContext.csproj.CoreCompileInputs.cache
+C:\Users\gazto\Source\Repos\FastFA\LexContext\obj\Debug\netcoreapp3.1\LexContext.dll
+C:\Users\gazto\Source\Repos\FastFA\LexContext\obj\Debug\netcoreapp3.1\LexContext.pdb
