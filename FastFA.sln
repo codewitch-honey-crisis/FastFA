@@ -12,7 +12,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FastFA", "FastFA\FastFA.csp
 		{2A8E4869-FE68-4A30-BE9F-65CBB72B70B3} = {2A8E4869-FE68-4A30-BE9F-65CBB72B70B3}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleDemo", "SimpleDemo\SimpleDemo.csproj", "{7E1BEBC2-DDE4-487A-8681-7032BC42051E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleDemo", "SimpleDemo\SimpleDemo.csproj", "{7E1BEBC2-DDE4-487A-8681-7032BC42051E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{218F59A6-7848-4A37-92DA-786A81AB2085}"
+	ProjectSection(SolutionItems) = preProject
+		csbrick.exe = csbrick.exe
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
