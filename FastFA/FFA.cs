@@ -2295,18 +2295,23 @@ namespace F
 			lc.EnsureStarted();
 			int si = 0;
 			while (true) {
+				// retrieve the accept id
 				var acc = dfa[si++];
 				if (lc.Current == LexContext.EndOfInput) {
 					return acc != -1;
 				}
+				// get the transitions count
 				var trns = dfa[si++];
 				var matched = false;
-				var ssi = si;
 				for (var i = 0; i < trns; ++i) {
+					// get the destination state
 					var tto = dfa[si++];
+					// get the packed range count
 					var prlen = dfa[si++];
 					for (var j = 0; j < prlen; ++j) {
+						// get the min cp
 						var min = dfa[si++];
+						// get the max cp
 						var max = dfa[si++];
 						if (min > lc.Current) {
 							si += (prlen - (j+1)) * 2;
@@ -2315,12 +2320,14 @@ namespace F
 						if (max >= lc.Current) {
 							si = tto;
 							matched = true;
+							// break out of both loops
 							goto next_state;
 						}
 					}
 				}
 			next_state:
 				if (!matched) {
+					// is the state accepting?
 					if (acc != -1) {
 						return lc.Current == LexContext.EndOfInput;
 					}
@@ -2328,6 +2335,7 @@ namespace F
 				}
 				lc.Advance();
 				if (lc.Current == LexContext.EndOfInput) {
+					// is the current state accepting
 					return dfa[si] != -1;
 				}
 			}
