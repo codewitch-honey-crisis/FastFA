@@ -318,7 +318,7 @@ namespace F
 		/// Builds a machine that is the concatenation of several machines
 		/// </summary>
 		/// <param name="exprs">The machines to concatenate.</param>
-		/// <param name="accept">The accept symbopl id.</param>
+		/// <param name="accept">The accept symbol id.</param>
 		/// <returns>A new machine that matches the specified contiguous sequence of expressions.</returns>
 		public static FFA Concat(IEnumerable<FFA> exprs, int accept = 0)
 		{
@@ -382,7 +382,7 @@ namespace F
 		/// Builds a machine that is the union of several machines
 		/// </summary>
 		/// <param name="exprs">The machines to union.</param>
-		/// <param name="accept">The accept symbopl id.</param>
+		/// <param name="accept">The accept symbol id.</param>
 		/// <returns>A new machine that matches any one of the specified expressions.</returns>
 		public static FFA Or(IEnumerable<FFA> exprs, int accept = 0)
 		{
