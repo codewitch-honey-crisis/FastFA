@@ -1135,13 +1135,13 @@ namespace F
 			}
 
 		}
-		public FFA ToDfa()
+		public FFA ToDfa(IProgress<int> progress = null)
 		{
-			return _Determinize(this);
+			return _Determinize(this,progress);
 		}
-		public FFA ToMinimized()
+		public FFA ToMinimized(IProgress<int> progress = null)
 		{
-			return _Minimize(this);
+			return _Minimize(this,progress);
 		}
 		public void Totalize()
 		{
@@ -1176,8 +1176,10 @@ namespace F
 			}
 		}
 
-		static FFA _Minimize(FFA a)
+		static FFA _Minimize(FFA a,IProgress<int> progress)
 		{
+			int prog = 0;
+			if(progress!=null) { progress.Report(prog); }
 			a = a.ToDfa();
 			var tr = a.Transitions;
 			if (1 == tr.Count)
@@ -1190,7 +1192,8 @@ namespace F
 			}
 
 			a.Totalize();
-
+			prog = 1;
+			if (progress != null) { progress.Report(prog); }
 			// Make arrays for numbered states and effective alphabet.
 			var cl = a.FillClosure();
 			var states = new FFA[cl.Count];
@@ -1229,12 +1232,14 @@ namespace F
 				_Init(v, sigma.Length);
 				reverse.Add(v);
 			}
-
+			prog = 2;
+			if (progress != null) { progress.Report(prog); }
 			var reverseNonempty = new bool[states.Length, sigma.Length];
 
 			var partition = new List<LinkedList<FFA>>();
 			_Init(partition, states.Length);
-
+			prog = 3;
+			if (progress != null) { progress.Report(prog); }
 			var block = new int[states.Length];
 			var active = new _FList[states.Length, sigma.Length];
 			var active2 = new _FListNode[states.Length, sigma.Length];
@@ -1247,7 +1252,8 @@ namespace F
 
 			var splitblock = new List<List<FFA>>();
 			_Init(splitblock, states.Length);
-
+			prog = 4;
+			if (progress != null) { progress.Report(prog); }
 			for (int q = 0; q < states.Length; q++)
 			{
 				splitblock[q] = new List<FFA>();
@@ -1274,6 +1280,8 @@ namespace F
 					reverse[pn][x].Enqueue(qq);
 					reverseNonempty[pn, x] = true;
 				}
+				++prog;
+				if (progress != null) { progress.Report(prog); }
 			}
 
 			// Initialize active sets.
@@ -1289,6 +1297,8 @@ namespace F
 						}
 					}
 				}
+				++prog;
+				if (progress != null) { progress.Report(prog); }
 			}
 
 			// Initialize pending.
@@ -1329,7 +1339,8 @@ namespace F
 						}
 					}
 				}
-
+				++prog;
+				if (progress != null) { progress.Report(prog); }
 				// Refine blocks.
 				foreach (int j in refine)
 				{
@@ -1380,12 +1391,15 @@ namespace F
 
 					refine2[j] = false;
 					splitblock[j].Clear();
+					++prog;
+					if (progress != null) { progress.Report(prog); }
 				}
 
 				split.Clear();
 				refine.Clear();
 			}
-
+			++prog;
+			if (progress != null) { progress.Report(prog); }
 			// Make a new state for each equivalence class, set initial state.
 			var newstates = new FFA[k];
 			for (int n = 0; n < newstates.Length; n++)
@@ -1404,6 +1418,8 @@ namespace F
 					s.Tag = q.Tag; // Select representative.
 					q.Tag = n;
 				}
+				++prog;
+				if (progress != null) { progress.Report(prog); }
 			}
 
 			// Build transitions and set acceptance.
@@ -1416,6 +1432,8 @@ namespace F
 				{
 					s.Transitions.Add(new FFATransition(t.Min, t.Max, newstates[t.To.Tag]));
 				}
+				++prog;
+				if (progress != null) { progress.Report(prog); }
 			}
 			// remove dead transitions
 			foreach (var ffa in a.FillClosure())
@@ -1482,11 +1500,11 @@ namespace F
 				return new _FListNode(q, this);
 			}
 		}
-		public int[] ToDfaTable() {
+		public int[] ToDfaTable(IProgress<int> progress = null) {
 			FFA fa = this;
 			if(!IsDeterministic)
 			{
-				fa = this.ToMinimized();
+				fa = this.ToMinimized(progress);
 			}
 			var working = new List<int>();
 			var closure = new List<F.FFA>();
@@ -1614,8 +1632,10 @@ namespace F
 			}
 		}
 
-		static FFA _Determinize(FFA fa)
+		static FFA _Determinize(FFA fa,IProgress<int> progress)
 		{
+			int prog = 0;
+			if (progress != null) { progress.Report(prog); }
 			var p = new HashSet<int>();
 			var closure = new List<FFA>();
 			fa.FillClosure(closure);
@@ -1636,7 +1656,8 @@ namespace F
 			var points = new int[p.Count];
 			p.CopyTo(points, 0);
 			Array.Sort(points);
-
+			++prog;
+			if (progress != null) { progress.Report(prog); }
 			var sets = new Dictionary<KeySet<FFA>, KeySet<FFA>>();
 			var working = new Queue<KeySet<FFA>>();
 			var dfaMap = new Dictionary<KeySet<FFA>, FFA>();
@@ -1654,6 +1675,8 @@ namespace F
 					break;
 				}
 			}
+			++prog;
+			if (progress != null) { progress.Report(prog); }
 			dfaMap.Add(initial, result);
 			while (working.Count > 0)
 			{
@@ -1701,6 +1724,8 @@ namespace F
 						last = 0x10ffff;
 					dfa.Transitions.Add(new FFATransition(first, last, dst));
 				}
+				++prog;
+				if (progress != null) { progress.Report(prog); }
 
 			}
 			// remove dead transitions
@@ -1716,6 +1741,8 @@ namespace F
 					}
 				}
 			}
+			++prog;
+			if (progress != null) { progress.Report(prog); }
 			return result;
 		}
 		/// <summary>
