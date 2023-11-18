@@ -36,7 +36,7 @@ namespace SimpleDemo {
 				Console.WriteLine("\t{0} @ {1}", lc.GetCapture(), pos);
 			}
 			// C identifier:
-			var ident = FFA.Parse("[A-Z_a-z][A-Z_a-z0-9]*");
+			var ident = FFA.Parse("[A-Z_a-z][A-Z_a-z0-9]*",0).ToMinimized();
 			var opts = new FFA.DotGraphOptions();
 			// don't need to see accept symbol ids
 			opts.HideAcceptSymbolIds = true;
