@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "Iy06hk8e7kcIOnqrJLu5Fl/KAAML7Nv1zfdMnQcKZodLZZKgvk68RYaordD7Eazc642K9LA4aORjBtaZioYi+A==",
+  "dgSpecHash": "e8kbWTpj0M2xh5Qw9Nt217YVBDSN2gdl54P39Z8YOocVozRQeyWzpNroeV+FB+5vljxkza6eFCEA3X9Mv9rK2A==",
   "success": true,
   "projectFilePath": "C:\\Users\\gazto\\Source\\Repos\\FastFA\\FastFA\\FastFA.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\gazto\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\gazto\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -85,7 +85,7 @@ namespace F
 					}
 					var rpairs = _FromPairs(rngs);
 					for (var r = 0; r < rpairs.Length;r+=2)
-						_AppendGVRangeTo(sb,rpairs, r);
+						_AppendRangeTo(sb,rpairs, r);
 					if (isNot || sb.Length != 1 || (char.IsWhiteSpace(sb.ToString(), 0)))
 					{
 						writer.Write('[');
@@ -245,7 +245,7 @@ namespace F
 				}
 			}
 		}
-		static void _AppendGVRangeTo(StringBuilder builder, int[] ranges, int index)
+		static void _AppendRangeTo(StringBuilder builder, int[] ranges, int index)
 		{
 			var first = ranges[index];
 			var last = ranges[index + 1];

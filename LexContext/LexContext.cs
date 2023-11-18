@@ -407,26 +407,7 @@ namespace LC
 			++_position;
 			return _current;
 		}
-        public override string ToString() {
-			string s;
-			switch(Current) {
-			case LexContext.BeforeInput:
-				s = "{<<}";
-				break;
-			case LexContext.EndOfInput:
-				s = "{EOI}";
-				break;
-			default:
-				s = char.ConvertFromUtf32(Current);
-				break;
-			}
-			if (!string.IsNullOrEmpty(FileOrUrl)) {
-				return string.Format("{0} (0x{1}) @ line {2}, column {3}, position {4}, source {5}", s, Current.ToString("X"), Line, Column, Position, FileOrUrl);
-			} else {
-				return string.Format("{0} (0x{1}) @ line {2}, column {3}, position {4}", s, Current.ToString("X"), Line, Column, Position);
-			}
-        }
-        protected abstract int AdvanceInner();
+		protected abstract int AdvanceInner();
 
 		protected abstract void CloseInner();
 		

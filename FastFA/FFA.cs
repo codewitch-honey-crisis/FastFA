@@ -63,32 +63,14 @@ using System.Text;
 using LC;
 namespace F
 {
-	/// <summary>
-	/// Represents a single transition in a state
-	/// </summary>
 #if FFALIB
 	public
 #endif
 	partial struct FFATransition
 	{
-		/// <summary>
-		/// The minimum value in the range
-		/// </summary>
 		public int Min;
-		/// <summary>
-		/// The maximum value in the range
-		/// </summary>
 		public int Max;
-		/// <summary>
-		/// The destination state
-		/// </summary>
 		public FFA To;
-		/// <summary>
-		/// Constructs a new instance
-		/// </summary>
-		/// <param name="min">The minimum value in the range</param>
-		/// <param name="max">The maximum value in the range</param>
-		/// <param name="to">The destination state</param>
 		public FFATransition(int min, int max, FFA to)
 		{
 			Min = min;
@@ -97,54 +79,23 @@ namespace F
 		}
 
 	}
-	/// <summary>
-	/// Represents a single state and/or the root state in a state machine.
-	/// </summary>
 #if FFALIB
 	public
 #endif
 	partial class FFA
 	{
-		/// <summary>
-		/// Indicates whether this state is deterministic.
-		/// </summary>
-		public bool IsDeterministic { get; private set; } = true;
-		/// <summary>
-		/// Indicates whether this state is accepting.
-		/// </summary>
-		public bool IsAccepting { get; set; } = false;
-		/// <summary>
-		/// Indicates the integer accept symbol.
-		/// </summary>
-		/// <remarks>-1 is reserved and should not be used.</remarks>
-		public int AcceptSymbol { get; set; } = 0;
-		/// <summary>
-		/// Indicates an application defined tag for this state
-		/// </summary>
-		public int Tag { get; set; } = 0;
-		/// <summary>
-		/// Indicates the list of transitions for this state
-		/// </summary>
+		public bool IsDeterministic = true;
+		public bool IsAccepting = false;
+		public int AcceptSymbol = -1;
+		public int Tag = 0;
 		public readonly IList<FFATransition> Transitions = new List<FFATransition>();
-		/// <summary>
-		/// Constructs a new instance of a state
-		/// </summary>
-		/// <param name="isAccepting">Indicates whether the state is accepting.</param>
-		/// <param name="acceptSymbol">Indicates the integer accept symbol for this state.</param>
-		public FFA(bool isAccepting = false, int acceptSymbol = 0)
+		public FFA(bool isAccepting, int acceptSymbol)
 		{
 			IsAccepting = isAccepting;
 			AcceptSymbol = acceptSymbol;
 		}
-		/// <summary>
-		/// Indicates if this state has no outgoing transitions.
-		/// </summary>
+		public FFA() { }
 		public bool IsFinal { get { return 0 == Transitions.Count; } }
-		/// <summary>
-		/// Adds an epsilon transition to this state.
-		/// </summary>
-		/// <param name="to">The destination state</param>
-		/// <remarks>Epsilon transitions are flattened into the machine as soon as they are added so they cannot be readily extracted in the same form they were inserted.</remarks>
 		public void AddEpsilon(FFA to)
 		{
 			if (to.IsAccepting && !IsAccepting)
@@ -158,11 +109,6 @@ namespace F
 			}
 			IsDeterministic = false;
 		}
-		/// <summary>
-		/// Fills a list with the set of all states reachable from this state along the arrows, including itself as the first state.
-		/// </summary>
-		/// <param name="result">An optional list to fill. If not indicated, one will be created.</param>
-		/// <returns>The filled list.</returns>
 		public IList<FFA> FillClosure(IList<FFA> result = null)
 		{
 			if (null == result)
@@ -177,21 +123,13 @@ namespace F
 			}
 			return result;
 		}
-		/// <summary>
-		/// Fills a list with the set of all states in the machine that are accepting.
-		/// </summary>
-		/// <param name="result">An optional list to fill. If not indicated, one will be created.</param>
-		/// <returns>The filled list.</returns>
+
+
+
 		public IList<FFA> FillAcceptingStates(IList<FFA> result = null)
 		{
 			return FillAcceptingStates(FillClosure(), result);
 		}
-		/// <summary>
-		/// Fills a list with the set of all states in the machine that are accepting.
-		/// </summary>
-		/// <param name="closure">The precomputed closure to use.</param>
-		/// <param name="result">An optional list to fill. If not indicated, one will be created.</param>
-		/// <returns>The filled list.</returns>
 		public static IList<FFA> FillAcceptingStates(IList<FFA> closure, IList<FFA> result = null)
 		{
 			if (null == result)
@@ -204,11 +142,6 @@ namespace F
 			}
 			return result;
 		}
-		/// <summary>
-		/// Fills a dictionary with packed input ranges keyed by destination state.
-		/// </summary>
-		/// <param name="result">A dictionary to fill. If not indicated, one will be created.</param>
-		/// <returns>A dictionary filled with the ranges grouped by state</returns>
 		public IDictionary<FFA, int[]> FillInputTransitionRangesGroupedByState(IDictionary<FFA, int[]> result = null)
 		{
 			var working = new Dictionary<FFA, List<KeyValuePair<int, int>>>();
@@ -247,43 +180,32 @@ namespace F
 				}
 			}
 		}
-		/// <summary>
-		/// Creates a deep copy of this machine, meaning this state and any referenced states
-		/// </summary>
-		/// <returns>A copy of this machine that is its equivalent.</returns>
 		public FFA Clone() { return Clone(FillClosure()); }
-        /// <summary>
-        /// Creates a deep copy of this machine, meaning this state and any referenced states
-        /// </summary>
-        /// <param name="closure">The precomputed closure used to clone.</param>
-        /// <returns>A copy of this machine that is its equivalent.</returns>
-        public static FFA Clone(IList<FFA> closure) {
-            var nclosure = new FFA[closure.Count];
-            for (var i = 0; i < nclosure.Length; i++) {
-                var fa = closure[i];
-                var nfa = new FFA();
-                nfa.IsAccepting = fa.IsAccepting;
-                nfa.AcceptSymbol = fa.AcceptSymbol;
-                nfa.IsDeterministic = fa.IsDeterministic;
-                nclosure[i] = nfa;
-            }
-            for (var i = 0; i < nclosure.Length; i++) {
-                var fa = closure[i];
-                var nfa = nclosure[i];
-                for (int jc = fa.Transitions.Count, j = 0; j < jc; ++j) {
-                    var t = fa.Transitions[j];
-                    nfa.Transitions.Add(new FFATransition(t.Min, t.Max, nclosure[closure.IndexOf(t.To)]));
-                }
-            }
-            return nclosure[0];
-        }
-		/// <summary>
-		/// Builds a machine that matches a literal sequence.
-		/// </summary>
-		/// <param name="string">The inputs to accept. Typically, these are UTF32 codepoints.</param>
-		/// <param name="accept">The accept symbol id.</param>
-		/// <returns>A new machine that matches the specified string</returns>
-        public static FFA Literal(IEnumerable<int> @string, int accept = 0)
+		public static FFA Clone(IList<FFA> closure)
+		{
+			var nclosure = new FFA[closure.Count];
+			for (var i = 0; i < nclosure.Length; i++)
+			{
+				var fa = closure[i];
+				var nfa = new FFA();
+				nfa.IsAccepting = fa.IsAccepting;
+				nfa.AcceptSymbol = fa.AcceptSymbol;
+				nfa.IsDeterministic = fa.IsDeterministic;
+				nclosure[i] = nfa;
+			}
+			for (var i = 0; i < nclosure.Length; i++)
+			{
+				var fa = closure[i];
+				var nfa = nclosure[i];
+				for (int jc = fa.Transitions.Count, j = 0; j < jc; ++j)
+				{
+					var t = fa.Transitions[j];
+					nfa.Transitions.Add(new FFATransition(t.Min, t.Max, nclosure[closure.IndexOf(t.To)]));
+				}
+			}
+			return nclosure[0];
+		}
+		public static FFA Literal(IEnumerable<int> @string, int accept = -1)
 		{
 			var result = new FFA();
 			var current = result;
@@ -298,13 +220,7 @@ namespace F
 			}
 			return result;
 		}
-		/// <summary>
-		/// Builds a machine that matches one of a set of inputs.
-		/// </summary>
-		/// <param name="ranges">The input ranges to accept. Typically, these are UTF32 codepoints.</param>
-		/// <param name="accept">The accept symbol id.</param>
-		/// <returns>A new machine that matches the specified set of ranges.</returns>
-		public static FFA Set(IEnumerable<KeyValuePair<int, int>> ranges, int accept = 0)
+		public static FFA Set(IEnumerable<KeyValuePair<int, int>> ranges, int accept = -1)
 		{
 			var result = new FFA();
 			var final = new FFA(true, accept);
@@ -312,15 +228,11 @@ namespace F
 			pairs.Sort((x, y) => { var c = x.Key.CompareTo(y.Key); if (0 != c) return c; return x.Value.CompareTo(y.Value); });
 			foreach (var pair in pairs)
 				result.Transitions.Add(new FFATransition(pair.Key, pair.Value, final));
+
 			return result;
 		}
-		/// <summary>
-		/// Builds a machine that is the concatenation of several machines
-		/// </summary>
-		/// <param name="exprs">The machines to concatenate.</param>
-		/// <param name="accept">The accept symbol id.</param>
-		/// <returns>A new machine that matches the specified contiguous sequence of expressions.</returns>
-		public static FFA Concat(IEnumerable<FFA> exprs, int accept = 0)
+
+		public static FFA Concat(IEnumerable<FFA> exprs, int accept = -1)
 		{
 			FFA result = null, left = null, right = null;
 			foreach (var val in exprs)
@@ -378,13 +290,7 @@ namespace F
 				//Debug.Assert(null!= lhs.FirstAcceptingState);
 			}
 		}
-		/// <summary>
-		/// Builds a machine that is the union of several machines
-		/// </summary>
-		/// <param name="exprs">The machines to union.</param>
-		/// <param name="accept">The accept symbol id.</param>
-		/// <returns>A new machine that matches any one of the specified expressions.</returns>
-		public static FFA Or(IEnumerable<FFA> exprs, int accept = 0)
+		public static FFA Or(IEnumerable<FFA> exprs, int accept = -1)
 		{
 			var result = new FFA();
 			var final = new FFA(true, accept);
@@ -406,13 +312,7 @@ namespace F
 			}
 			return result;
 		}
-		/// <summary>
-		/// Creates a machine that matches the expression or the empty string
-		/// </summary>
-		/// <param name="expr">The expression</param>
-		/// <param name="accept">The accept symbol id.</param>
-		/// <returns>A new machine that matches the expression or the empty string</returns>
-		public static FFA Optional(FFA expr, int accept = 0)
+		public static FFA Optional(FFA expr, int accept = -1)
 		{
 			var result = expr.Clone();
 			var acc = result.FillAcceptingStates();
@@ -425,15 +325,7 @@ namespace F
 			}
 			return result;
 		}
-		/// <summary>
-		/// Creates a machine that matches the specified repeating sequence of an expression
-		/// </summary>
-		/// <param name="expr">The expression</param>
-		/// <param name="minOccurs">The minimum number of occurrances to match.</param>
-		/// <param name="maxOccurs">The maximum number of occurrances to match, or 0 for no maximum.</param>
-		/// <param name="accept">The accept symbol id.</param>
-		/// <returns>A new machine that matches the specified repeating sequence of an expression</returns>
-		public static FFA Repeat(FFA expr, int minOccurs = -1, int maxOccurs = -1, int accept = 0)
+		public static FFA Repeat(FFA expr, int minOccurs = -1, int maxOccurs = -1, int accept = -1)
 		{
 			expr = expr.Clone();
 			if (minOccurs > 0 && maxOccurs > 0 && minOccurs > maxOccurs)
@@ -520,13 +412,7 @@ namespace F
 			// should never get here
 			throw new NotImplementedException();
 		}
-		/// <summary>
-		/// Makes a new case insenstive expression based on an expression
-		/// </summary>
-		/// <param name="expr">The expression.</param>
-		/// <param name="accept">The accept symbol id.</param>
-		/// <returns>A new expression that matches the expression without regard to case</returns>
-		public static FFA CaseInsensitive(FFA expr, int accept = 0)
+		public static FFA CaseInsensitive(FFA expr, int accept = -1)
 		{
 			var result = expr.Clone();
 			var closure = new List<FFA>();
@@ -567,17 +453,8 @@ namespace F
 			}
 			return result;
 		}
-		/// <summary>
-		/// Parses a regular expression
-		/// </summary>
-		/// <param name="input">The input expression text.</param>
-		/// <param name="accept">The accept symbol id.</param>
-		/// <param name="line">The line where the parsing is assumed to have started.</param>
-		/// <param name="column">The column where the parsing is assumed to have started.</param>
-		/// <param name="position">The position where the parsing is assumed to have started.</param>
-		/// <param name="fileOrUrl">The source document that contains the input.</param>
-		/// <returns>A new machine that matches the specified regular expression</returns>
-		public static FFA Parse(IEnumerable<char> input, int accept = 0, int line = 1, int column = 1, long position = 0, string fileOrUrl = null)
+
+		public static FFA Parse(IEnumerable<char> input, int accept = -1, int line = 1, int column = 1, long position = 0, string fileOrUrl = null)
 		{
 			var lc = LexContext.Create(input);
 			lc.EnsureStarted();
@@ -585,10 +462,10 @@ namespace F
 			var result = Parse(lc, accept);
 			return result;
 		}
-		internal static FFA Parse(LexContext pc, int accept = 0)
+		internal static FFA Parse(LexContext pc, int accept = -1)
 		{
 
-			FFA result = null, next = null;
+			FFA result = null, next;
 			int ich;
 			pc.EnsureStarted();
 			while (true)
@@ -596,7 +473,7 @@ namespace F
 				switch (pc.Current)
 				{
 					case -1:
-						result = result.ToMinimized();
+						//result = result.ToMinimized();
 						return result;
 					case '.':
 						var dot = FFA.Set(new KeyValuePair<int, int>[] { new KeyValuePair<int, int>(0, 0x10ffff) }, accept);
@@ -778,7 +655,7 @@ namespace F
 							result = next;
 						break;
 					case ')':
-						result = result.ToMinimized();
+						//result = result.ToMinimized();
 						return result;
 					case '(':
 						pc.Advance();
@@ -987,6 +864,7 @@ namespace F
 			pc.Advance();
 			return new KeyValuePair<bool, int[]>(isNot, result.ToArray());
 		}
+		
 		static FFA _ParseModifier(FFA expr, LexContext pc, int accept)
 		{
 			var line = pc.Line;
@@ -1257,27 +1135,19 @@ namespace F
 			}
 
 		}
-		/// <summary>
-		/// Makes the machine into a DFA
-		/// </summary>
-		/// <returns>A new machine that is the DFA equivalent of this machine</returns>
 		public FFA ToDfa()
 		{
 			return _Determinize(this);
 		}
-		/// <summary>
-		/// Makes a minimized version of this machine
-		/// </summary>
-		/// <returns>A machine with spurious states eliminated</returns>
 		public FFA ToMinimized()
 		{
 			return _Minimize(this);
 		}
-		private void _Totalize()
+		public void Totalize()
 		{
-			_Totalize(FillClosure());
+			Totalize(FillClosure());
 		}
-		static void _Totalize(IList<FFA> closure)
+		public static void Totalize(IList<FFA> closure)
 		{
 			var s = new FFA();
 			s.Transitions.Add(new FFATransition(0, 0x10ffff, s));
@@ -1319,7 +1189,7 @@ namespace F
 				}
 			}
 
-			a._Totalize();
+			a.Totalize();
 
 			// Make arrays for numbered states and effective alphabet.
 			var cl = a.FillClosure();
@@ -1612,27 +1482,15 @@ namespace F
 				return new _FListNode(q, this);
 			}
 		}
-		/// <summary>
-		/// Creates a packed DFA table from this machine
-		/// </summary>
-		/// <returns>A new array that contains this machine as a DFA table</returns>
 		public int[] ToDfaTable() {
+			FFA fa = this;
+			if(!IsDeterministic)
+			{
+				fa = this.ToMinimized();
+			}
 			var working = new List<int>();
 			var closure = new List<F.FFA>();
-			var fa = this;
 			fa.FillClosure(closure);
-			var isDfa = true;
-			foreach(var cfa in closure) {
-				if(!cfa.IsDeterministic) {
-					isDfa = false;
-					break;
-                }
-            }
-			if(!isDfa) {
-				fa = fa.ToDfa();
-				closure.Clear();
-				fa.FillClosure(closure);
-			}
 			var stateIndices = new int[closure.Count];
 			for (var i = 0; i < closure.Count; ++i) {
 				var cfa = closure[i];
@@ -1669,11 +1527,6 @@ namespace F
 			}
 			return result;
 		}
-		/// <summary>
-		/// Creates a machine based on the given DFA table
-		/// </summary>
-		/// <param name="dfa">The DFA table</param>
-		/// <returns>A new machine based on the DFA table</returns>
 		public static FFA FromDfaTable(int[] dfa) {
 			if (null == dfa) return null;
 			if(dfa.Length == 0) return new FFA();
@@ -1866,330 +1719,16 @@ namespace F
 			return result;
 		}
 		/// <summary>
-		/// Escapes a single codepoint
-		/// </summary>
-		/// <param name="codepoint">The codepoint</param>
-		/// <param name="builder">The optional <see cref="StringBuilder"/> to write to.</param>
-		/// <returns>The escaped codepoint</returns>
-		public static string EscapeCodepoint(int codepoint,StringBuilder builder = null) {
-			if(null==builder)
-				builder = new StringBuilder();
-			switch (codepoint) {
-			case '.':
-			case '[':
-			case ']':
-			case '^':
-			case '-':
-			case '\\':
-				builder.Append('\\');
-				builder.Append(char.ConvertFromUtf32(codepoint));
-				break;
-			case '\t':
-				builder.Append("\\t");
-				break;
-			case '\n':
-				builder.Append("\\n");
-				break;
-			case '\r':
-				builder.Append("\\r");
-				break;
-			case '\0':
-				builder.Append("\\0");
-				break;
-			case '\f':
-				builder.Append("\\f");
-				break;
-			case '\v':
-				builder.Append("\\v");
-				break;
-			case '\b':
-				builder.Append("\\b");
-				break;
-			default:
-				var s = char.ConvertFromUtf32(codepoint);
-				if (!char.IsLetterOrDigit(s, 0) && !char.IsSeparator(s, 0) && !char.IsPunctuation(s, 0) && !char.IsSymbol(s, 0)) {
-					if (s.Length == 1) {
-						builder.Append("\\u");
-						builder.Append(unchecked((ushort)codepoint).ToString("x4"));
-					} else {
-						builder.Append("\\U");
-						builder.Append(codepoint.ToString("x8"));
-					}
-
-				} else
-					builder.Append(s);
-				break;
-			}
-			return builder.ToString();
-		}
-		private sealed class _EFA {
-			public bool IsAccepting;
-			public int Accept;
-			public List<KeyValuePair<StringBuilder, _EFA>> Transitions { get; } = new List<KeyValuePair<StringBuilder, _EFA>>();
-			public IList<_EFA> FillClosure(IList<_EFA> result = null) {
-				if (result == null) result = new List<_EFA>();
-				if (result.Contains(this))
-					return result;
-				result.Add(this);
-				foreach (var t in Transitions) {
-					t.Value.FillClosure(result);
-				}
-
-				return result;
-			}
-			public static IList<KeyValuePair<_EFA, string>> GetIncomingTransitions(IEnumerable<_EFA> closure, _EFA efa, bool includeLoops = true) {
-				var result = new List<KeyValuePair<_EFA, string>>();
-				foreach (var cfa in closure) {
-					foreach (var t in cfa.Transitions) {
-						if (includeLoops || t.Value != cfa) {
-							if (t.Value == efa) {
-								result.Add(new KeyValuePair<_EFA, string>(cfa, t.Key.ToString()));
-							}
-						}
-					}
-				}
-				return result;
-			}
-			public IDictionary<_EFA, StringBuilder> FillInputTransitionsGroupedByState(IDictionary<_EFA, StringBuilder> result = null) {
-				if (result == null) {
-					result = new Dictionary<_EFA, StringBuilder>();
-				}
-				var h = new HashSet<_EFA>();
-				for (var i = 0; i < Transitions.Count; ++i) {
-					var t = Transitions[i];
-					StringBuilder exp;
-					if (!result.TryGetValue(t.Value, out exp)) {
-						var sb = new StringBuilder(t.Key.ToString());
-						result.Add(t.Value, sb);
-					} else {
-						if (!h.Add(t.Value)) {
-							exp.Remove(exp.Length - 1, 1);
-						} else {
-							exp.Insert(0, "(");
-						}
-						exp.Append("|");
-						exp.Append(t.Key.ToString());
-						exp.Append(")");
-					}
-				}
-				return result;
-			}
-			public int IndexOfTransition(string value) {
-				var result = 0;
-				foreach (var t in Transitions) {
-					if (t.ToString().Equals(value, StringComparison.InvariantCulture)) {
-						return result;
-					}
-					++result;
-				}
-				return -1;
-			}
-		}
-		static void _AppendRangeTo(StringBuilder builder, int[] ranges, int index) {
-			var first = ranges[index];
-			var last = ranges[index + 1];
-			EscapeCodepoint(first,builder);
-			if (0 == last.CompareTo(first)) return;
-			if (last == first + 1) // spit out 1 length ranges as two chars
-			{
-				EscapeCodepoint(last,builder);
-				return;
-			}
-			builder.Append('-');
-			EscapeCodepoint(last,builder);
-		}
-		/// <summary>
-		/// Returns a regular expression that will match the same pattern as this machine.
-		/// </summary>
-		/// <returns>A regular expression that is equivilent to this machine</returns>
-		public override string ToString() {
-			// Still somewhat untested
-			var closure = FillClosure();
-			IList<_EFA> efas = new List<_EFA>(closure.Count + 1);
-			var i = 0;
-			while (i <= closure.Count) {
-				efas.Add(null);
-				++i;
-			}
-			i = 0;
-			foreach (var cfa in closure) {
-				efas[i] = new _EFA();
-				++i;
-			}
-			var final = new _EFA();
-			final.IsAccepting = true;
-			final.Accept = 0;
-			efas[i] = final;
-			for (i = 0; i < closure.Count; ++i) {
-				var e = efas[i];
-				var c = closure[i];
-				if (c.IsAccepting) {
-					e.Transitions.Add(new KeyValuePair<StringBuilder, _EFA>(new StringBuilder(), final));
-				}
-				var rngGrps = c.FillInputTransitionRangesGroupedByState();
-				foreach (var rngGrp in rngGrps) {
-					var tto = efas[closure.IndexOf(rngGrp.Key)];
-					var sb = new StringBuilder();
-					IList<KeyValuePair<int, int>> rngs = _ToPairs(rngGrp.Value);
-					var nrngs = new List<KeyValuePair<int, int>>(_NotRanges(rngs));
-					var isNot = false;
-					if (nrngs.Count < rngs.Count || (nrngs.Count == rngs.Count && 0x10ffff == rngs[rngs.Count - 1].Value)) {
-						isNot = true;
-						if (0 != nrngs.Count) {
-							sb.Append("^");
-						} else {
-							sb.Append(".");
-						}
-						rngs = nrngs;
-					}
-					var rpairs = _FromPairs(rngs);
-					for (var r = 0; r < rpairs.Length; r += 2) {
-						_AppendRangeTo(sb, rpairs, r);
-					}
-					if (isNot || sb.Length != 1 || (char.IsWhiteSpace(sb.ToString(), 0))) {
-						sb.Insert(0, '[');
-						sb.Append(']');
-					}
-					e.Transitions.Add(new KeyValuePair<StringBuilder, _EFA>(sb, tto));
-				}
-			}
-			i = 0;
-			var done = false;
-			while (!done) {
-				done = true;
-				var innerDone = false;
-				while (!innerDone) {
-					innerDone = true;
-					foreach (var e in efas) {
-						if (e.Transitions.Count == 1) {
-							var its = _EFA.GetIncomingTransitions(efas, e);
-							if (its.Count == 1 && its[0].Key.Transitions.Count == 1) {
-								// is a loop?
-								if (e.Transitions[0].Value == its[0].Key) {
-									if (e.Transitions[0].Key.Length == 1) {
-										e.Transitions[0].Key.Append("*");
-									} else {
-										e.Transitions[0].Key.Insert(0, "(");
-										e.Transitions[0].Key.Append(")*");
-									}
-								} else {
-									its[0].Key.Transitions[0] = new KeyValuePair<StringBuilder, _EFA>(its[0].Key.Transitions[0].Key, e.Transitions[0].Value);
-									its[0].Key.Transitions[0].Key.Append(e.Transitions[0].Key.ToString());
-								}
-								innerDone = false;
-								efas = efas[0].FillClosure();
-							} else {
-								foreach (var it in its) {
-									// is it a loop?
-									if (efas.IndexOf(it.Key) >= efas.IndexOf(e)) {
-										// yes
-									} else {
-										// no
-										for (var ii = 0; ii < it.Key.Transitions.Count; ++ii) {
-											if (it.Value == it.Key.Transitions[ii].Key.ToString()) {
-												it.Key.Transitions[ii] = new KeyValuePair<StringBuilder, _EFA>(it.Key.Transitions[ii].Key, e.Transitions[0].Value);
-												it.Key.Transitions[ii].Key.Append(e.Transitions[0].Key.ToString());
-												innerDone = false;
-												efas = efas[0].FillClosure();
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					if (innerDone) {
-						efas = efas[0].FillClosure();
-					} else
-						done = false;
-					// combine the unions
-					innerDone = false;
-					while (!innerDone) {
-						innerDone = true;
-						foreach (var e in efas) {
-							var rgs = e.FillInputTransitionsGroupedByState();
-							if (rgs.Count != e.Transitions.Count) {
-								e.Transitions.Clear();
-								foreach (var rg in rgs) {
-									e.Transitions.Add(new KeyValuePair<StringBuilder, _EFA>(rg.Value, rg.Key));
-								}
-								innerDone = false;
-								efas = efas[0].FillClosure();
-							}
-						}
-					}
-					if (innerDone) {
-						efas = efas[0].FillClosure();
-					} else
-						done = false;
-
-					// remove the loops
-					innerDone = false;
-					while (!innerDone) {
-						innerDone = true;
-						foreach (var e in efas) {
-							for (var ii = 0; ii < e.Transitions.Count; ++ii) {
-								var t = e.Transitions[ii];
-								if (t.Value == e) {
-									// this is a loop
-									if (t.Key.Length > 1) {
-										t.Key.Insert(0, "(");
-										t.Key.Append(")");
-									}
-									t.Key.Append("*");
-									// prepend it to all the other transitions 
-									for (var iii = 0; iii < e.Transitions.Count; ++iii) {
-										if (ii != iii) {
-											var tt = e.Transitions[iii];
-											if (tt.Value != e) {
-												tt.Key.Insert(0, t.Key.ToString());
-
-											}
-										}
-									}
-									e.Transitions.RemoveAt(ii);
-									--ii;
-									innerDone = false;
-									efas = efas[0].FillClosure();
-								}
-
-							}
-						}
-					}
-					if (innerDone) {
-						efas = efas[0].FillClosure();
-					} else
-						done = false;
-				}
-			}
-			return efas[0].Transitions[0].Key.ToString();
-		}
-		/// <summary>
-		/// Retrieves a transition index given a specified UTF32 codepoint
-		/// </summary>
-		/// <param name="codepoint">The codepoint</param>
-		/// <returns>The index of the matching transition or a negative number if no match was found.</returns>
-		public int FindTransitionIndex(int codepoint) {
-			for(var i = 0;i<Transitions.Count;++i) {
-				var t = Transitions[i];
-				if (t.Min > codepoint) { 
-					return -1;
-                }
-				if(t.Max>=codepoint) {
-					return i;
-                }
-            }
-			return -1;
-        }
-		/// <summary>
 		/// Indicates whether or not the collection of states contains an accepting state
 		/// </summary>
 		/// <param name="states">The states to check</param>
 		/// <returns>True if one or more of the states is accepting, otherwise false</returns>
-		public static bool HasAcceptingState(IEnumerable<FFA> states) {
-			foreach(var state in states) {
+		public static bool HasAcceptingState(IEnumerable<FFA> states)
+		{
+			foreach (var state in states)
+			{
 				if (state.IsAccepting) return true;
-            }
+			}
 			return false;
 		}
 		/// <summary>
@@ -2199,28 +1738,55 @@ namespace F
 		/// <param name="codepoint">The codepoint to move on</param>
 		/// <param name="result">A list to hold the next states. If null, one will be created.</param>
 		/// <returns>The list of next states</returns>
-		public static IList<FFA> FillMove(IEnumerable<FFA> states, int codepoint, IList<FFA> result = null) {
+		public static IList<FFA> FillMove(IEnumerable<FFA> states, int codepoint, IList<FFA> result = null)
+		{
 			if (result == null) result = new List<FFA>();
-			foreach(var state in states) {
+			foreach (var state in states)
+			{
 				var i = state.FindTransitionIndex(codepoint);
-				if(-1<i) {
+				if (-1 < i)
+				{
 					var tto = state.Transitions[i].To;
-					if(!result.Contains(tto)) {
+					if (!result.Contains(tto))
+					{
 						result.Add(tto);
-                    }
-                }
-            }
+					}
+				}
+			}
 			return result;
-        }
+		}
+		/// <summary>
+		/// Retrieves a transition index given a specified UTF32 codepoint
+		/// </summary>
+		/// <param name="codepoint">The codepoint</param>
+		/// <returns>The index of the matching transition or a negative number if no match was found.</returns>
+		public int FindTransitionIndex(int codepoint)
+		{
+			for (var i = 0; i < Transitions.Count; ++i)
+			{
+				var t = Transitions[i];
+				if (t.Min > codepoint)
+				{
+					return -1;
+				}
+				if (t.Max >= codepoint)
+				{
+					return i;
+				}
+			}
+			return -1;
+		}
 		/// <summary>
 		/// Returns the next state
 		/// </summary>
 		/// <param name="codepoint">The codepoint to move on</param>
 		/// <returns>The next state, or null if there was no valid move.</returns>
 		/// <remarks>This machine must be a DFA or this won't work correctly.</remarks>
-		public FFA DfaMove(int codepoint) {
+		public FFA DfaMove(int codepoint)
+		{
 			var i = FindTransitionIndex(codepoint);
-			if (-1 < i) {
+			if (-1 < i)
+			{
 				return Transitions[i].To;
 			}
 			return null;
@@ -2230,58 +1796,72 @@ namespace F
 		/// </summary>
 		/// <param name="text">The text</param>
 		/// <returns>True if the passed in text was a match, otherwise false.</returns>
-		public bool IsMatch(IEnumerable<char> text) {
+		public bool IsMatch(IEnumerable<char> text)
+		{
 			return IsMatch(LexContext.Create(text));
-        }
+		}
 		/// <summary>
 		/// Indicates whether this machine will match the indicated text
 		/// </summary>
 		/// <param name="lc">A <see cref="LexContext"/> containing the text</param>
 		/// <returns>True if the passed in text was a match, otherwise false.</returns>
-		public bool IsMatch(LexContext lc) {
+		public bool IsMatch(LexContext lc)
+		{
 			lc.EnsureStarted();
-			if(IsDeterministic) {
+			if (IsDeterministic)
+			{
 				var state = this;
-				while(true) {
+				while (true)
+				{
 					var next = state.DfaMove(lc.Current);
-					if(null==next) {
-						if (state.IsAccepting) {
+					if (null == next)
+					{
+						if (state.IsAccepting)
+						{
 							return lc.Current == LexContext.EndOfInput;
 						}
 						return false;
-                    }
+					}
 					lc.Advance();
 					state = next;
-					if(lc.Current == LexContext.EndOfInput) {
+					if (lc.Current == LexContext.EndOfInput)
+					{
 						return state.IsAccepting;
-                    }
-                }
-			} else {
+					}
+				}
+			}
+			else
+			{
 				IList<FFA> states = new List<FFA>();
 				states.Add(this);
-				while(true) {
+				while (true)
+				{
 					var next = FFA.FillMove(states, lc.Current);
-					if(next.Count==0) {
-						if(HasAcceptingState(states)) {
+					if (next.Count == 0)
+					{
+						if (HasAcceptingState(states))
+						{
 							return lc.Current == LexContext.EndOfInput;
-                        }
+						}
 						return false;
-                    }
+					}
 					lc.Advance();
 					states = next;
-					if (lc.Current == LexContext.EndOfInput) {
+					if (lc.Current == LexContext.EndOfInput)
+					{
 						return HasAcceptingState(states);
 					}
 				}
-            }
-        }
+			}
+		}
 		/// <summary>
 		/// Indicates whether this machine will match the indicated text
 		/// </summary>
 		/// <param name="dfa">The DFA state table</param>
 		/// <param name="text">The text</param>
 		/// <returns>True if the passed in text was a match, otherwise false.</returns>
-		public static bool IsMatch(int[] dfa, IEnumerable<char> text) {
+		public static bool IsMatch(int[] dfa, IEnumerable<char> text)
+		{
 			return IsMatch(dfa, LexContext.Create(text));
 		}
 
@@ -2291,33 +1871,40 @@ namespace F
 		/// <param name="dfa">The DFA state table</param>
 		/// <param name="lc">A <see cref="LexContext"/> containing the text</param>
 		/// <returns>True if the passed in text was a match, otherwise false.</returns>
-		public static bool IsMatch(int[] dfa, LexContext lc) {
+		public static bool IsMatch(int[] dfa, LexContext lc)
+		{
 			lc.EnsureStarted();
 			int si = 0;
-			while (true) {
+			while (true)
+			{
 				// retrieve the accept id
 				var acc = dfa[si++];
-				if (lc.Current == LexContext.EndOfInput) {
+				if (lc.Current == LexContext.EndOfInput)
+				{
 					return acc != -1;
 				}
 				// get the transitions count
 				var trns = dfa[si++];
 				var matched = false;
-				for (var i = 0; i < trns; ++i) {
+				for (var i = 0; i < trns; ++i)
+				{
 					// get the destination state
 					var tto = dfa[si++];
 					// get the packed range count
 					var prlen = dfa[si++];
-					for (var j = 0; j < prlen; ++j) {
+					for (var j = 0; j < prlen; ++j)
+					{
 						// get the min cp
 						var min = dfa[si++];
 						// get the max cp
 						var max = dfa[si++];
-						if (min > lc.Current) {
-							si += (prlen - (j+1)) * 2;
+						if (min > lc.Current)
+						{
+							si += (prlen - (j + 1)) * 2;
 							break;
 						}
-						if (max >= lc.Current) {
+						if (max >= lc.Current)
+						{
 							si = tto;
 							matched = true;
 							// break out of both loops
@@ -2325,16 +1912,19 @@ namespace F
 						}
 					}
 				}
-			next_state:
-				if (!matched) {
+				next_state:
+				if (!matched)
+				{
 					// is the state accepting?
-					if (acc != -1) {
+					if (acc != -1)
+					{
 						return lc.Current == LexContext.EndOfInput;
 					}
 					return false;
 				}
 				lc.Advance();
-				if (lc.Current == LexContext.EndOfInput) {
+				if (lc.Current == LexContext.EndOfInput)
+				{
 					// is the current state accepting
 					return dfa[si] != -1;
 				}
@@ -2345,17 +1935,23 @@ namespace F
 		/// </summary>
 		/// <param name="lc">The <see cref="LexContext"/> with the text to search</param>
 		/// <returns>The 0 based position of the next match or less than 0 if not found.</returns>
-		public long Search(LexContext lc) {
+		public long Search(LexContext lc)
+		{
 			lc.EnsureStarted();
 			lc.ClearCapture();
 			var result = lc.Position;
-			if (IsDeterministic) {
-				while (lc.Current != LexContext.EndOfInput) {
+			if (IsDeterministic)
+			{
+				while (lc.Current != LexContext.EndOfInput)
+				{
 					var state = this;
-					while (true) {
+					while (true)
+					{
 						var next = state.DfaMove(lc.Current);
-						if (null == next) {
-							if (state.IsAccepting && lc.CaptureBuffer.Length > 1) {
+						if (null == next)
+						{
+							if (state.IsAccepting && lc.CaptureBuffer.Length > 1)
+							{
 								return result - 1;
 							}
 							lc.ClearCapture();
@@ -2363,26 +1959,34 @@ namespace F
 							result = -1;
 							break;
 						}
-						if (result == -1) {
+						if (result == -1)
+						{
 							result = lc.Position;
 						}
 						lc.Capture();
 						lc.Advance();
 						state = next;
-						if (lc.Current == LexContext.EndOfInput) {
+						if (lc.Current == LexContext.EndOfInput)
+						{
 							return state.IsAccepting ? result - 1 : -1;
 						}
 					}
 				}
 				return this.IsAccepting ? result - 1 : -1;
-			} else {
-				while (lc.Current != LexContext.EndOfInput) {
+			}
+			else
+			{
+				while (lc.Current != LexContext.EndOfInput)
+				{
 					IList<FFA> states = new List<FFA>();
 					states.Add(this);
-					while (true) {
+					while (true)
+					{
 						var next = FFA.FillMove(states, lc.Current);
-						if (next.Count == 0) {
-							if (HasAcceptingState(states) && lc.CaptureBuffer.Length > 1) {
+						if (next.Count == 0)
+						{
+							if (HasAcceptingState(states) && lc.CaptureBuffer.Length > 1)
+							{
 								return result - 1;
 							}
 							lc.ClearCapture();
@@ -2390,13 +1994,15 @@ namespace F
 							result = -1;
 							break;
 						}
-						if (result == -1) {
+						if (result == -1)
+						{
 							result = lc.Position;
 						}
 						lc.Capture();
 						lc.Advance();
 						states = next;
-						if (lc.Current == LexContext.EndOfInput) {
+						if (lc.Current == LexContext.EndOfInput)
+						{
 							return HasAcceptingState(states) ? result - 1 : -1;
 						}
 					}
@@ -2410,41 +2016,52 @@ namespace F
 		/// <param name="dfa">The DFA state table</param>
 		/// <param name="lc">The <see cref="LexContext"/> with the text to search</param>
 		/// <returns>The 0 based position of the next match or less than 0 if not found.</returns>
-		public static long Search(int[] dfa, LexContext lc) {
+		public static long Search(int[] dfa, LexContext lc)
+		{
 			lc.EnsureStarted();
 			lc.ClearCapture();
 			var result = lc.Position;
-			while (lc.Current != LexContext.EndOfInput) {
+			while (lc.Current != LexContext.EndOfInput)
+			{
 				var si = 0;
-				while (true) {
+				while (true)
+				{
 					var acc = dfa[si++];
-					if (lc.Current == LexContext.EndOfInput) {
-						if(acc!=-1 && lc.CaptureBuffer.Length > 1) {
+					if (lc.Current == LexContext.EndOfInput)
+					{
+						if (acc != -1 && lc.CaptureBuffer.Length > 1)
+						{
 							return result - 1;
-                        }
+						}
 					}
 					var trns = dfa[si++];
 					var matched = false;
-					for (var i = 0; i < trns; ++i) {
+					for (var i = 0; i < trns; ++i)
+					{
 						var tto = dfa[si++];
 						var prlen = dfa[si++];
-						for (var j = 0; j < prlen; ++j) {
+						for (var j = 0; j < prlen; ++j)
+						{
 							var min = dfa[si++];
 							var max = dfa[si++];
-							if (min > lc.Current) {
-								si += (prlen - (j+1)) * 2;
+							if (min > lc.Current)
+							{
+								si += (prlen - (j + 1)) * 2;
 								break;
 							}
-							if (max >= lc.Current) {
+							if (max >= lc.Current)
+							{
 								si = tto;
 								matched = true;
 								goto next_state;
 							}
 						}
 					}
-				next_state:
-					if (!matched) {
-						if (acc != -1 && lc.CaptureBuffer.Length> 1) {
+					next_state:
+					if (!matched)
+					{
+						if (acc != -1 && lc.CaptureBuffer.Length > 1)
+						{
 							return result - 1;
 						}
 						lc.ClearCapture();
@@ -2453,17 +2070,20 @@ namespace F
 						si = 0;
 						break;
 					}
-					if (result == -1) {
+					if (result == -1)
+					{
 						result = lc.Position;
 					}
 					lc.Capture();
 					lc.Advance();
-					if (lc.Current == LexContext.EndOfInput) {
-						return dfa[si]!=-1 ? result - 1 : -1;
+					if (lc.Current == LexContext.EndOfInput)
+					{
+						return dfa[si] != -1 ? result - 1 : -1;
 					}
 				}
 			}
-			return dfa[0]!=-1 ? result - 1 : -1;
+			return dfa[0] != -1 ? result - 1 : -1;
 		}
 	}
 }
+

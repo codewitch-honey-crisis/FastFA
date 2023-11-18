@@ -8,14 +8,14 @@
     ".NETCoreApp,Version=v3.1": {
       "SimpleDemo/1.0.0": {
         "dependencies": {
-          "FastFA": "1.0.1",
+          "FastFA": "1.0.0",
           "LexContext": "1.0.0"
         },
         "runtime": {
           "SimpleDemo.dll": {}
         }
       },
-      "FastFA/1.0.1": {
+      "FastFA/1.0.0": {
         "dependencies": {
           "LexContext": "1.0.0"
         },
@@ -36,7 +36,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "FastFA/1.0.1": {
+    "FastFA/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

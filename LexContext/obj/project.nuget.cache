@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "FtC2HSAcelLmOExi4FItsFz4k7emNswAiUgoagfVcm3H3cGbPsnn6PK4lD33mUbuG9UZTmstgEVm5cxNkTxtaQ==",
+  "dgSpecHash": "MnHTwM6abmHeOzet1fvQy4rr0kWEWsr5D1FNNW0H5OIxtLYHk6Hvo4EZDbaluC+c0kGMsaucx2yPC2Pi8HadMg==",
   "success": true,
   "projectFilePath": "C:\\Users\\gazto\\Source\\Repos\\FastFA\\LexContext\\LexContext.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\gazto\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\gazto\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512"
+  ],
   "logs": []
 }

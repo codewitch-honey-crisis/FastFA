@@ -9,13 +9,15 @@ namespace SimpleDemo {
 			Console.WriteLine(exp);
 			
 			// parse it
-			var fa = FFA.Parse(exp);
+			var fa = FFA.Parse(exp,0);
 			// write it back as an equivalent regular expression
 			Console.WriteLine(fa);
 			// run IsMatch
 			Console.WriteLine("IsMatch(\"foo\") = {0}", fa.IsMatch("foo"));
 			// run IsMatch (DFA table)
-			Console.WriteLine("IsMatch(dfa, \"barbar\") = {0}", FFA.IsMatch(fa.ToDfaTable(), "barbar"));
+			var fa2 = fa.ToMinimized();
+			fa2.RenderToFile("test.jpg");
+			Console.WriteLine("IsMatch(dfa, \"barbar\") = {0}", FFA.IsMatch(fa2.ToDfaTable(), "barbar"));
 			
 			// run searches
 			var srch = "abcde foo fghij barbar klmnop baz";
