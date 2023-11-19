@@ -15,4 +15,8 @@
     <DefineConstants>TRACE;LCLIB</DefineConstants>
   </PropertyGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;$(SolutionDir)csbrick.exe&quot; &quot;$(SolutionDir)LexContext\LexContext.csproj&quot; /output &quot;$(SolutionDir)LexContext.brick.cs&quot;" />
+  </Target>
+
 </Project>

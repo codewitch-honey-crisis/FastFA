@@ -59,6 +59,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using LC;
 namespace F
@@ -1723,6 +1724,8 @@ namespace F
 					else
 						last = 0x10ffff;
 					dfa.Transitions.Add(new FFATransition(first, last, dst));
+					++prog;
+					if (progress != null) { progress.Report(prog); }
 				}
 				++prog;
 				if (progress != null) { progress.Report(prog); }
@@ -1740,6 +1743,8 @@ namespace F
 						ffa.Transitions.Remove(trns);
 					}
 				}
+				++prog;
+				if (progress != null) { progress.Report(prog); }
 			}
 			++prog;
 			if (progress != null) { progress.Report(prog); }
@@ -2110,6 +2115,29 @@ namespace F
 				}
 			}
 			return dfa[0] != -1 ? result - 1 : -1;
+		}
+		public static IEnumerable<int> ToUtf32(IEnumerable<char> @string)
+		{
+			int chh = -1;
+			foreach (var ch in @string)
+			{
+				if (char.IsHighSurrogate(ch))
+				{
+					chh = ch;
+					continue;
+				}
+				else
+					chh = -1;
+				if (-1 != chh)
+				{
+					if (!char.IsLowSurrogate(ch))
+						throw new IOException("Unterminated Unicode surrogate pair found in string.");
+					yield return char.ConvertToUtf32(unchecked((char)chh), ch);
+					chh = -1;
+					continue;
+				}
+				yield return ch;
+			}
 		}
 	}
 }

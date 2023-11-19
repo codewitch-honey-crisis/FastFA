@@ -23,4 +23,8 @@
     <ProjectReference Include="..\LexContext\LexContext.csproj" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;$(SolutionDir)csbrick.exe&quot; &quot;$(SolutionDir)FastFA\FastFA.csproj&quot; /output &quot;$(SolutionDir)FastFA.brick.cs&quot;" />
+  </Target>
+
 </Project>
