@@ -1505,7 +1505,7 @@ namespace F
 			FFA fa = this;
 			if(!IsDeterministic)
 			{
-				fa = this.ToMinimized(progress);
+				fa = this.ToDfa(progress);
 			}
 			var working = new List<int>();
 			var closure = new List<F.FFA>();
