@@ -35,7 +35,8 @@ namespace F
 		static void _WriteDotTo(IList<FFA> closure, TextWriter writer, DotGraphOptions options = null)
 		{
 			if (null == options) options = new DotGraphOptions();
-			string spfx = null == options.StatePrefix ? "q" : options.StatePrefix;
+			string spfx = (null == options.StatePrefix ? "q" : options.StatePrefix);
+			
 			writer.WriteLine("digraph FFA {");
 			writer.WriteLine("rankdir=LR");
 			writer.WriteLine("node [shape=circle]");
@@ -175,7 +176,13 @@ namespace F
 				options = new DotGraphOptions();
 			string args = "-T";
 			string ext = Path.GetExtension(filename);
-			if (0 == string.Compare(".png", ext, StringComparison.InvariantCultureIgnoreCase))
+			if(0==string.Compare(".dot", ext,StringComparison.InvariantCultureIgnoreCase)) {
+				using (var writer = new StreamWriter(filename, false))
+				{
+					WriteDotTo(writer, options);
+					return;
+				}
+			} else if (0 == string.Compare(".png", ext, StringComparison.InvariantCultureIgnoreCase))
 				args += "png";
 			else if (0 == string.Compare(".jpg", ext, StringComparison.InvariantCultureIgnoreCase))
 				args += "jpg";
@@ -209,7 +216,7 @@ namespace F
 		/// <summary>
 		/// Renders Graphviz output for this machine to a stream
 		/// </summary>
-		/// <param name="format">The output format. The format to render can be any supported dot output format. See dot command line documation for details.</param>
+		/// <param name="format">The output format. The format to render can be any supported dot output format or "dot" to render a dot file. See dot command line documation for details.</param>
 		/// <param name="copy">True to copy the stream, otherwise false</param>
 		/// <param name="options">A <see cref="DotGraphOptions"/> instance with any options, or null to use the defaults</param>
 		/// <returns>A stream containing the output. The caller is expected to close the stream when finished.</returns>
@@ -217,6 +224,15 @@ namespace F
 		{
 			if (null == options)
 				options = new DotGraphOptions();
+			if(0==string.Compare(format,"dot",StringComparison.InvariantCultureIgnoreCase))
+			{
+				var stm = new MemoryStream();
+				using(var writer = new StreamWriter(stm)) { 
+					WriteDotTo(writer, options); 
+					stm.Seek(0,SeekOrigin.Begin);
+					return stm;
+				}
+			}
 			string args = "-T";
 			args += string.Concat(" ", format);
 			if (0 < options.Dpi)

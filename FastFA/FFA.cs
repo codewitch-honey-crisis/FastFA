@@ -124,9 +124,32 @@ namespace F
 			}
 			return result;
 		}
-
-
-
+		
+  		public FFA ClonePathTo(FFA to)
+   		{
+   			var closure = FillClosure();
+   			var nclosure = new FFA[closure.Count];
+   			for (var i = 0; i < nclosure.Length; i++)
+   			{
+   				nclosure[i] = new FFA(closure[i].IsAccepting, closure[i].AcceptSymbol);
+   				nclosure[i].Tag = closure[i].Tag;
+   			}
+   			for (var i = 0; i < nclosure.Length; i++)
+   			{
+   				var t = nclosure[i].Transitions;
+   				foreach (var trns in closure[i].Transitions)
+   				{
+   					if (trns.To.FillClosure().Contains(to))
+   					{
+   						var id = closure.IndexOf(trns.To);
+   						t.Add(new FFATransition(trns.Min,trns.Max, nclosure[id]));
+   					}
+   				}
+   			}
+   			return nclosure[0];
+   		}
+			
+		
 		public IList<FFA> FillAcceptingStates(IList<FFA> result = null)
 		{
 			return FillAcceptingStates(FillClosure(), result);
