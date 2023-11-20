@@ -808,12 +808,14 @@ Transitions=new List<FFATransition>();public FFA(bool isAccepting,int acceptSymb
 =Transitions[i];t.To.FillClosure(result);}return result;}public FFA ClonePathTo(FFA to){var closure=FillClosure();var nclosure=new FFA[closure.Count];
 for(var i=0;i<nclosure.Length;i++){nclosure[i]=new FFA(closure[i].IsAccepting,closure[i].AcceptSymbol);nclosure[i].Tag=closure[i].Tag;}for(var i=0;i<nclosure.Length;
 i++){var t=nclosure[i].Transitions;foreach(var trns in closure[i].Transitions){if(trns.To.FillClosure().Contains(to)){var id=closure.IndexOf(trns.To);
-t.Add(new FFATransition(trns.Min,trns.Max,nclosure[id]));}}}return nclosure[0];}public IList<FFA>FillAcceptingStates(IList<FFA>result=null){return FillAcceptingStates(FillClosure(),
-result);}public static IList<FFA>FillAcceptingStates(IList<FFA>closure,IList<FFA>result=null){if(null==result)result=new List<FFA>();for(int ic=closure.Count,
-i=0;i<ic;++i){var fa=closure[i];if(fa.IsAccepting)result.Add(fa);}return result;}public IDictionary<FFA,int[]>FillInputTransitionRangesGroupedByState(IDictionary<FFA,
-int[]>result=null){var working=new Dictionary<FFA,List<KeyValuePair<int,int>>>();foreach(var trns in Transitions){List<KeyValuePair<int,int>>l;if(!working.TryGetValue(trns.To,
-out l)){l=new List<KeyValuePair<int,int>>();working.Add(trns.To,l);}l.Add(new KeyValuePair<int,int>(trns.Min,trns.Max));}if(null==result)result=new Dictionary<FFA,
-int[]>();foreach(var item in working){item.Value.Sort((x,y)=>{var c=x.Key.CompareTo(y.Key);if(0!=c)return c;return x.Value.CompareTo(y.Value);});_NormalizeSortedRangeList(item.Value);
+t.Add(new FFATransition(trns.Min,trns.Max,nclosure[id]));}}}return nclosure[0];}public int[]MarkPathTo(FFA to){var closure=FillClosure();var result=new
+ List<int>(closure.Count);for(int i=0;i<closure.Count;++i){var fa=closure[i];if(fa.FillClosure().Contains(to)){result.Add(i);}}return result.ToArray();
+}public IList<FFA>FillAcceptingStates(IList<FFA>result=null){return FillAcceptingStates(FillClosure(),result);}public static IList<FFA>FillAcceptingStates(IList<FFA>
+closure,IList<FFA>result=null){if(null==result)result=new List<FFA>();for(int ic=closure.Count,i=0;i<ic;++i){var fa=closure[i];if(fa.IsAccepting)result.Add(fa);
+}return result;}public IDictionary<FFA,int[]>FillInputTransitionRangesGroupedByState(IDictionary<FFA,int[]>result=null){var working=new Dictionary<FFA,
+List<KeyValuePair<int,int>>>();foreach(var trns in Transitions){List<KeyValuePair<int,int>>l;if(!working.TryGetValue(trns.To,out l)){l=new List<KeyValuePair<int,
+int>>();working.Add(trns.To,l);}l.Add(new KeyValuePair<int,int>(trns.Min,trns.Max));}if(null==result)result=new Dictionary<FFA,int[]>();foreach(var item
+ in working){item.Value.Sort((x,y)=>{var c=x.Key.CompareTo(y.Key);if(0!=c)return c;return x.Value.CompareTo(y.Value);});_NormalizeSortedRangeList(item.Value);
 result.Add(item.Key,_FromPairs(item.Value));}return result;}static void _NormalizeSortedRangeList(IList<KeyValuePair<int,int>>pairs){var or=default(KeyValuePair<int,
 int>);for(int i=1;i<pairs.Count;++i){if(pairs[i-1].Value+1>=pairs[i].Key){var nr=new KeyValuePair<int,int>(pairs[i-1].Key,pairs[i].Value);pairs[i-1]=or
 =nr;pairs.RemoveAt(i);--i;}}}public FFA Clone(){return Clone(FillClosure());}public static FFA Clone(IList<FFA>closure){var nclosure=new FFA[closure.Count];

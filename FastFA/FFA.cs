@@ -148,8 +148,21 @@ namespace F
    			}
    			return nclosure[0];
    		}
-			
-		
+		public int[] MarkPathTo(FFA to)
+		{
+			var closure = FillClosure();
+			var result = new List<int>(closure.Count);
+			for(int i = 0;i<closure.Count;++i)
+			{
+				var fa = closure[i];
+				if(fa.FillClosure().Contains(to))
+				{
+					result.Add(i);
+				}
+			}
+			return result.ToArray();
+		}
+
 		public IList<FFA> FillAcceptingStates(IList<FFA> result = null)
 		{
 			return FillAcceptingStates(FillClosure(), result);
